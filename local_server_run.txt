@@ -1,0 +1,20 @@
+1. Start The Backend
+
+>> Open a terminal in backend/.
+
+>> Python project, using a virtual environment:
+
+cd "C:\Users\DH\OneDrive\Desktop\Online Complaint Management System\backend"
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+
+
+2. Start The Frontend
+
+>> Open a second terminal in frontend/.
+
+cd "C:\Users\DH\OneDrive\Desktop\Online Complaint Management System\frontend"
+npm install
+npm run dev

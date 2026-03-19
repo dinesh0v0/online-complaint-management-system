@@ -9,7 +9,7 @@ const styles = {
 export function StatusBadge({ status }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${styles[status] || 'border-line bg-surface text-ink'}`}
+      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-3 py-1 text-xs font-semibold leading-none ${styles[status] || 'border-line bg-surface text-ink'}`}
     >
       {formatStatus(status)}
     </span>

@@ -234,8 +234,8 @@ export function AdminDashboardPage() {
                           : 'border-line/70 bg-white/80 hover:border-accent/40 dark:bg-white/5'
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="font-semibold text-ink">{complaint.title}</p>
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="min-w-0 font-semibold text-ink">{complaint.title}</p>
                         <StatusBadge status={complaint.status} />
                       </div>
                       <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent-strong">{complaint.category}</p>

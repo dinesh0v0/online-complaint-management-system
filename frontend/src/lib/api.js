@@ -15,16 +15,30 @@ function createHeaders(token, hasBody) {
 }
 
 async function request(path, { method = 'GET', body, token } = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: createHeaders(token, body !== undefined),
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  })
+  let response
 
-  const payload = await response.json().catch(() => ({}))
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: createHeaders(token, body !== undefined),
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    })
+  } catch {
+    throw new Error('Unable to reach the server. Check the deployed backend URL and allowed origins.')
+  }
+
+  const contentType = response.headers.get('content-type') || ''
+  const payload = contentType.includes('application/json') ? await response.json().catch(() => ({})) : {}
+  const responseText = contentType.includes('application/json') ? '' : await response.text().catch(() => '')
 
   if (!response.ok) {
-    throw new Error(payload.detail || payload.message || 'Request failed.')
+    throw new Error(
+      payload.detail ||
+        payload.message ||
+        payload.error_description ||
+        responseText ||
+        `Request failed with status ${response.status}.`,
+    )
   }
 
   return payload

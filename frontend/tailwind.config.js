@@ -1,27 +1,32 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class',
-  content: ['./index.html', './src/**/*.{js,jsx}'],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
-    container: {
-      center: true,
-      padding: '1.25rem',
-    },
     extend: {
+      fontFamily: {
+        sans: ['"Public Sans"', 'sans-serif'],
+        display: ['"Public Sans"', 'sans-serif'],
+      },
       colors: {
         bg: 'var(--color-bg)',
         surface: 'var(--color-surface)',
-        text: 'var(--color-text)',
-        'text-muted': 'var(--color-text-muted)',
-        primary: 'var(--color-primary)',
-        'primary-hover': 'var(--color-primary-hover)',
+        primary: {
+          DEFAULT: 'var(--color-primary)',
+          600: 'var(--color-primary-600)',
+        },
+        text: {
+          DEFAULT: 'var(--color-text)',
+          muted: 'var(--color-text-muted)',
+        },
         border: 'var(--color-border)',
-        success: '#15803d',
-        warning: '#b45309',
       },
-      fontFamily: {
-        sans: ['"Public Sans"', 'system-ui', 'sans-serif'],
-      },
+      borderRadius: {
+        'lg': '0.5rem', /* Stitch ROUND_EIGHT exactly maps to 8px -> .5rem */
+      }
     },
   },
   plugins: [],

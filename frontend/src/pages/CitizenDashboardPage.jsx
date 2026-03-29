@@ -10,10 +10,7 @@ import { api } from '../lib/api';
 
 const staggerContainer = {
   hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
+  show: { opacity: 1, transition: { staggerChildren: 0.05 } }
 };
 
 const itemVariant = {
@@ -56,73 +53,84 @@ export function CitizenDashboardPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 md:space-y-8 max-w-6xl mx-auto pb-12 w-full">
+      
+      {/* Header matching Stitch Portal */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-text">Your Dashboard</h1>
-          <p className="text-text-muted mt-1">Track the status of your reported complaints.</p>
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-text tracking-tight">Personal Dashboard</h1>
+          <p className="text-text-muted mt-2 text-sm md:text-base">Track the status of your reported complaints.</p>
         </div>
-        <Button onClick={() => navigate('/portal/new')} className="gap-2">
-          <Plus size={18} /> File a New Complaint
+        <Button onClick={() => navigate('/portal/new')} className="gap-2 shrink-0 py-2.5 px-5 shadow-sm">
+          <Plus size={18} /> File Complaint
         </Button>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Metrics Row (4 Cards) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
         {[
-          { label: 'Total Filled', value: safeStats.total, icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-          { label: 'Resolved', value: safeStats.resolved, icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20' },
-          { label: 'In Progress', value: safeStats.inProgress, icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-          { label: 'Pending', value: safeStats.pending, icon: Clock, color: 'text-gray-500', bg: 'bg-gray-50 dark:bg-gray-800' },
+          { label: 'Total Filled', value: safeStats.total, icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-100 dark:border-blue-900' },
+          { label: 'Resolved', value: safeStats.resolved, icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-100 dark:border-green-900' },
+          { label: 'In Progress', value: safeStats.inProgress, icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-100 dark:border-amber-900' },
+          { label: 'Pending', value: safeStats.pending, icon: Clock, color: 'text-gray-500', bg: 'bg-gray-50 dark:bg-gray-800', border: 'border-gray-200 dark:border-gray-700' },
         ].map((stat, i) => (
-          <motion.div key={stat.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }}>
-            <Card className="flex items-center gap-4">
-              <div className={`p-4 rounded-full ${stat.bg} ${stat.color}`}>
-                <stat.icon size={24} />
+          <motion.div key={stat.label} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }}>
+            <Card hover={false} className={`flex flex-col md:flex-row items-start md:items-center gap-3 p-4 md:p-5 border ${stat.border}`}>
+              <div className={`p-3 md:p-4 rounded-xl ${stat.bg} ${stat.color} shadow-sm shrink-0`}>
+                 <stat.icon className="w-5 h-5 md:w-6 md:h-6" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-text">{stat.value}</p>
-                <p className="text-sm font-medium text-text-muted">{stat.label}</p>
+              <div className="mt-1 md:mt-0">
+                <p className="text-2xl md:text-3xl font-display font-bold text-text mb-0.5 leading-none">{stat.value}</p>
+                <p className="text-xs md:text-sm font-medium text-text-muted">{stat.label}</p>
               </div>
             </Card>
           </motion.div>
         ))}
       </div>
 
-      {/* Recent Activity */}
-      <div>
-        <h2 className="text-xl font-bold font-display text-text mb-4">Recent Complaints</h2>
+      {/* Recent Activity List */}
+      <div className="mt-8">
+        <h2 className="text-xl md:text-2xl font-bold font-display text-text mb-4 tracking-tight">Recent History</h2>
         {activeComplaints.length === 0 ? (
-          <Card className="p-8 text-center text-text-muted">
-            You have not filed any complaints yet.
+          <Card className="p-10 text-center flex flex-col items-center justify-center border border-dashed border-border shadow-none bg-surface/50">
+            <div className="w-16 h-16 bg-bg rounded-full flex items-center justify-center text-text-muted mb-4">
+              <FileText size={32} />
+            </div>
+            <h3 className="text-lg font-bold text-text mb-1">No Complaints Found</h3>
+            <p className="text-text-muted text-sm max-w-sm mb-6">
+              You haven't submitted any complaints to the network yet. When you do, they will appear here.
+            </p>
+            <Button variant="outline" onClick={() => navigate('/portal/new')}>Start a Report</Button>
           </Card>
         ) : (
-          <motion.div 
-            variants={staggerContainer} 
-            initial="hidden" 
-            animate="show"
-            className="grid gap-4"
-          >
+          <motion.div variants={staggerContainer} initial="hidden" animate="show" className="grid gap-3 md:gap-4">
             {activeComplaints.map(complaint => (
               <motion.div key={complaint.id} variants={itemVariant}>
-                <Card className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold font-mono text-text-muted">{complaint.id.split('-').pop()}</span>
+                <Card hover={true} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 md:p-5 group cursor-default transition-all duration-300">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-1.5">
+                      <span className="text-xs font-bold font-mono text-primary bg-primary/10 px-2 py-0.5 rounded tracking-wide">
+                        #{complaint.id.split('-').pop()}
+                      </span>
+                      <span className="text-xs text-text-muted font-medium">
+                        {new Date(complaint.submitted_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
                     </div>
-                    <h3 className="text-lg font-bold text-text">{complaint.title}</h3>
-                    <p className="text-sm text-text-muted mt-1 max-w-2xl line-clamp-1">{complaint.description}</p>
+                    <h3 className="text-base md:text-lg font-bold text-text truncate group-hover:text-primary transition-colors">
+                      {complaint.title}
+                    </h3>
+                    <p className="text-sm text-text-muted mt-1 max-w-2xl line-clamp-2 md:line-clamp-1">{complaint.description}</p>
                   </div>
                   
-                  <div className="flex items-center gap-4 shrink-0">
-                    <div className="text-sm text-right hidden sm:block">
-                      <p className="text-text-muted">{new Date(complaint.submitted_at).toLocaleDateString()}</p>
+                  <div className="flex items-center gap-4 shrink-0 mt-2 sm:mt-0">
+                    <div className="text-sm text-right hidden lg:block">
                       <p className="font-semibold text-text">{complaint.category}</p>
+                      <p className="text-xs text-text-muted">Category</p>
                     </div>
                     <Badge variant={
                       complaint.status === 'resolved' ? 'success' :
                       complaint.status === 'under_investigation' ? 'warning' : 'default'
-                    } className="px-3 py-1 capitalize">
+                    } className="px-3 py-1.5 capitalize text-xs md:text-sm font-semibold shadow-sm">
                       {complaint.status.replace('_', ' ')}
                     </Badge>
                   </div>

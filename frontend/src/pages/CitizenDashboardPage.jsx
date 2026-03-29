@@ -2,9 +2,11 @@ import { motion } from 'framer-motion';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
-import { mockComplaints, mockStats } from '../lib/mockData';
-import { FileText, CheckCircle, Clock, AlertTriangle, Plus } from 'lucide-react';
+import { FileText, CheckCircle, Clock, AlertTriangle, Plus, LoaderCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -21,6 +23,37 @@ const itemVariant = {
 
 export function CitizenDashboardPage() {
   const navigate = useNavigate();
+  const { session } = useAuth();
+
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ['myStats'],
+    queryFn: () => api.getMyComplaintStats(session?.access_token),
+    enabled: !!session?.access_token
+  });
+
+  const { data: complaints, isLoading: complaintsLoading } = useQuery({
+    queryKey: ['myComplaints'],
+    queryFn: () => api.getMyComplaints(session?.access_token),
+    enabled: !!session?.access_token
+  });
+
+  const safeStats = {
+    total: stats?.counts?.total || 0,
+    resolved: stats?.counts?.resolved || 0,
+    inProgress: stats?.counts?.under_investigation || 0,
+    pending: stats?.counts?.pending || 0
+  };
+
+  const activeComplaints = complaints || [];
+  const isLoading = statsLoading || complaintsLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <LoaderCircle className="animate-spin text-primary w-12 h-12" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-12">
@@ -37,10 +70,10 @@ export function CitizenDashboardPage() {
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Filled', value: mockStats.total, icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-          { label: 'Resolved', value: mockStats.resolved, icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20' },
-          { label: 'In Progress', value: mockStats.inProgress, icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-          { label: 'Pending', value: mockStats.pending, icon: Clock, color: 'text-gray-500', bg: 'bg-gray-50 dark:bg-gray-800' },
+          { label: 'Total Filled', value: safeStats.total, icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+          { label: 'Resolved', value: safeStats.resolved, icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20' },
+          { label: 'In Progress', value: safeStats.inProgress, icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+          { label: 'Pending', value: safeStats.pending, icon: Clock, color: 'text-gray-500', bg: 'bg-gray-50 dark:bg-gray-800' },
         ].map((stat, i) => (
           <motion.div key={stat.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }}>
             <Card className="flex items-center gap-4">
@@ -59,45 +92,45 @@ export function CitizenDashboardPage() {
       {/* Recent Activity */}
       <div>
         <h2 className="text-xl font-bold font-display text-text mb-4">Recent Complaints</h2>
-        <motion.div 
-          variants={staggerContainer} 
-          initial="hidden" 
-          animate="show"
-          className="grid gap-4"
-        >
-          {mockComplaints.map(complaint => (
-            <motion.div key={complaint.id} variants={itemVariant}>
-              <Card className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-bold font-mono text-text-muted">{complaint.id}</span>
+        {activeComplaints.length === 0 ? (
+          <Card className="p-8 text-center text-text-muted">
+            You have not filed any complaints yet.
+          </Card>
+        ) : (
+          <motion.div 
+            variants={staggerContainer} 
+            initial="hidden" 
+            animate="show"
+            className="grid gap-4"
+          >
+            {activeComplaints.map(complaint => (
+              <motion.div key={complaint.id} variants={itemVariant}>
+                <Card className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-bold font-mono text-text-muted">{complaint.id.split('-').pop()}</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-text">{complaint.title}</h3>
+                    <p className="text-sm text-text-muted mt-1 max-w-2xl line-clamp-1">{complaint.description}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 shrink-0">
+                    <div className="text-sm text-right hidden sm:block">
+                      <p className="text-text-muted">{new Date(complaint.submitted_at).toLocaleDateString()}</p>
+                      <p className="font-semibold text-text">{complaint.category}</p>
+                    </div>
                     <Badge variant={
-                      complaint.priority === 'High' ? 'danger' : 
-                      complaint.priority === 'Medium' ? 'warning' : 'default'}
-                    >
-                      {complaint.priority} Priority
+                      complaint.status === 'resolved' ? 'success' :
+                      complaint.status === 'under_investigation' ? 'warning' : 'default'
+                    } className="px-3 py-1 capitalize">
+                      {complaint.status.replace('_', ' ')}
                     </Badge>
                   </div>
-                  <h3 className="text-lg font-bold text-text">{complaint.title}</h3>
-                  <p className="text-sm text-text-muted mt-1 max-w-2xl line-clamp-1">{complaint.description}</p>
-                </div>
-                
-                <div className="flex items-center gap-4 shrink-0">
-                  <div className="text-sm text-right">
-                    <p className="text-text-muted">{complaint.date}</p>
-                    <p className="font-semibold text-text">{complaint.category}</p>
-                  </div>
-                  <Badge variant={
-                    complaint.status === 'Resolved' ? 'success' :
-                    complaint.status === 'In Progress' ? 'primary' : 'default'
-                  } className="px-3 py-1">
-                    {complaint.status}
-                  </Badge>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
     </div>
   );

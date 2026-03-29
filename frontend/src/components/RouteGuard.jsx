@@ -3,18 +3,18 @@ import { Navigate, useLocation } from 'react-router-dom'
 
 import { useAuth } from '../context/AuthContext'
 import { routeForRole } from '../lib/utils'
-import { Panel } from './Panel'
+import { Card } from './ui/Card'
 
 function LoadingScreen({ label }) {
   return (
     <div className="container flex min-h-screen items-center justify-center py-12">
-      <Panel className="max-w-md text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent/10 text-accent">
-          <LoaderCircle className="animate-spin" size={24} />
+      <Card hover={false} className="max-w-md text-center p-12">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <LoaderCircle className="animate-spin" size={32} />
         </div>
-        <h1 className="font-display text-2xl text-ink">Preparing your workspace</h1>
-        <p className="mt-2 text-sm text-muted">{label}</p>
-      </Panel>
+        <h1 className="font-display font-bold text-2xl text-text">Preparing your workspace</h1>
+        <p className="mt-2 text-sm text-text-muted">{label}</p>
+      </Card>
     </div>
   )
 }
@@ -58,9 +58,9 @@ export function AuthRoute({ children }) {
 
 export function AccessNotice() {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-sm font-medium text-accent-strong">
+    <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
       <ShieldCheck size={16} />
-      <span>Role-based access is enforced at both UI and API levels.</span>
+      <span>Role-based access is enforced securely.</span>
     </div>
   )
 }

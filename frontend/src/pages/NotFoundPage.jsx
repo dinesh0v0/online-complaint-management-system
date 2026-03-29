@@ -1,18 +1,20 @@
 import { Link } from 'react-router-dom'
-
-import { Panel } from '../components/Panel'
+import { Card } from '../components/ui/Card'
+import { Button } from '../components/ui/Button'
 
 export function NotFoundPage() {
   return (
-    <div className="container flex min-h-screen items-center justify-center py-12">
-      <Panel className="max-w-lg text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">404</p>
-        <h1 className="mt-3 font-display text-4xl text-ink">This route is not available.</h1>
-        <p className="mt-3 text-sm leading-7 text-muted">Use the home page to enter the citizen or admin portal.</p>
-        <Link to="/" className="mt-6 inline-flex rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white shadow">
-          Return home
-        </Link>
-      </Panel>
+    <div className="container flex min-h-[80vh] items-center justify-center py-12">
+      <Card hover={false} className="max-w-lg text-center p-12">
+        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">404 Error</p>
+        <h1 className="mt-3 font-display text-4xl text-ink font-bold">Page Not Found</h1>
+        <p className="mt-4 text-base leading-7 text-text-muted">The route you are looking for does not exist or you do not have permission to view it.</p>
+        <div className="mt-8">
+          <Link to="/">
+            <Button>Return Home</Button>
+          </Link>
+        </div>
+      </Card>
     </div>
   )
 }

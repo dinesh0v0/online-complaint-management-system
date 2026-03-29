@@ -1,41 +1,41 @@
-import { Laptop, Moon, Sun } from 'lucide-react'
-
-import { useTheme } from '../context/ThemeContext'
-import { THEME_OPTIONS } from '../lib/constants'
-import { cn } from '../lib/utils'
-
-const icons = {
-  light: Sun,
-  dark: Moon,
-  system: Laptop,
-}
+import { Moon, Sun } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function ThemeToggle() {
-  const { mode, setMode } = useTheme()
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="inline-flex rounded-full border border-line/70 bg-surface/80 p-1 shadow-panel backdrop-blur">
-      {THEME_OPTIONS.map((option) => {
-        const Icon = icons[option.value]
-        const active = mode === option.value
-
-        return (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => setMode(option.value)}
-            className={cn(
-              'inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition',
-              active
-                ? 'bg-accent text-white shadow'
-                : 'text-muted hover:bg-white/60 hover:text-ink dark:hover:bg-white/10',
-            )}
+    <button
+      onClick={toggleTheme}
+      className="relative inline-flex items-center justify-center p-2 rounded-full bg-surface border border-border text-text-muted hover:text-text transition-colors w-10 h-10 overflow-hidden"
+      aria-label="Toggle Dark Mode"
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        {theme === 'dark' ? (
+          <motion.div
+            key="moon"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute"
           >
-            <Icon size={14} />
-            <span>{option.label}</span>
-          </button>
-        )
-      })}
-    </div>
-  )
+            <Moon size={20} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="sun"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute"
+          >
+            <Sun size={20} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </button>
+  );
 }

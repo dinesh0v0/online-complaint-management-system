@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, LogIn, UserPlus, Lock, Mail, User } from 'lucide-react';
+import { ShieldCheck, LogIn, UserPlus, Lock, Mail, User, Search } from 'lucide-react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';

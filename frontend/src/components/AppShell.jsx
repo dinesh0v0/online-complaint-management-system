@@ -22,7 +22,7 @@ export function AppShell() {
   const navLinks = isAdmin
     ? [
         { to: '/admin', label: 'Operations Board', icon: LayoutDashboard },
-        { to: '/admin/reports', label: 'System Reports', icon: FileText },
+        { to: '/admin/update', label: 'Update Complaints', icon: FileText },
       ]
     : [
         { to: '/portal', label: 'My Dashboard', icon: LayoutDashboard },

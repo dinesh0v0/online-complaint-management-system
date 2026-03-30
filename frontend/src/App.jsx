@@ -3,7 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { AuthRoute, RouteGuard } from './components/RouteGuard'
 import { AdminDashboardPage } from './pages/AdminDashboardPage'
-import { AdminReportsPage } from './pages/AdminReportsPage'
+import { AdminUpdationPage } from './pages/AdminUpdationPage'
 import { AuthPage } from './pages/AuthPage'
 import { CitizenDashboardPage } from './pages/CitizenDashboardPage'
 import { HomePage } from './pages/HomePage'
@@ -47,7 +47,7 @@ function App() {
           }
         >
           <Route index element={<AdminDashboardPage />} />
-          <Route path="reports" element={<AdminReportsPage />} />
+          <Route path="update" element={<AdminUpdationPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

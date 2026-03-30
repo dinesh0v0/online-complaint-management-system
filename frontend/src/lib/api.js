@@ -71,5 +71,5 @@ export const api = {
     request(`/api/v1/admin/complaints/${complaintId}`, { method: 'PATCH', token, body }),
   addComplaintNote: (token, complaintId, body) =>
     request(`/api/v1/admin/complaints/${complaintId}/notes`, { method: 'POST', token, body }),
-  trackComplaint: (refId) => request(`/api/v1/complaints/track/${refId}`),
+  trackComplaint: (refId) => request(`/api/v1/complaints/track/${encodeURIComponent(refId)}`),
 }

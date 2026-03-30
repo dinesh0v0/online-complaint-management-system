@@ -228,19 +228,29 @@ def track_public_complaint(ref_id: str) -> dict[str, Any]:
     if len(clean_ref) < 5:
          raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Complaint not found. Please provide a valid Tracking ID.")
 
+    # Since PostgreSQL cannot use ILIKE on UUID types without explicit column casting,
+    # we fetch recent records and match the suffix in Python. 
+    # Valid tracking IDs are the last 12 chars of the UUID.
     result = (
         get_supabase_admin()
         .table("complaints")
         .select("id, status, title, category, submitted_at")
-        .ilike("id", f"%{clean_ref}")
-        .limit(1)
+        .order("submitted_at", desc=True)
+        .limit(2000)
         .execute()
     )
     records = result.data or []
-    if not records:
+    
+    matched_complaint = None
+    for row in records:
+        if row["id"].endswith(clean_ref) or clean_ref in row["id"]:
+            matched_complaint = row
+            break
+
+    if not matched_complaint:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Complaint not found. Please verify the Reference ID.")
 
-    complaint = records[0]
+    complaint = matched_complaint
     
     # Synthesize updates from notes or just simple status changes
     notes_result = (

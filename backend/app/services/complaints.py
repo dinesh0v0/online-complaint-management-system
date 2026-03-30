@@ -220,3 +220,55 @@ def build_stats(complaints: list[dict[str, Any]]) -> dict[str, Any]:
             {"label": label, "count": count} for label, count in top_categories
         ],
     }
+
+
+def track_public_complaint(ref_id: str) -> dict[str, Any]:
+    # Ensure ref_id is alphanumeric for safety
+    clean_ref = "".join(c for c in ref_id if c.isalnum() or c == "-")
+    if len(clean_ref) < 5:
+         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Complaint not found. Please provide a valid Tracking ID.")
+
+    result = (
+        get_supabase_admin()
+        .table("complaints")
+        .select("id, status, title, category, submitted_at")
+        .ilike("id", f"%{clean_ref}")
+        .limit(1)
+        .execute()
+    )
+    records = result.data or []
+    if not records:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Complaint not found. Please verify the Reference ID.")
+
+    complaint = records[0]
+    
+    # Synthesize updates from notes or just simple status changes
+    notes_result = (
+        get_supabase_admin()
+        .table("complaint_notes")
+        .select("created_at, note")
+        .eq("complaint_id", complaint["id"])
+        .order("created_at", desc=False)
+        .execute()
+    )
+    
+    updates = [
+        {"date": complaint["submitted_at"], "note": "Complaint successfully registered by the system.", "type": "success"}
+    ]
+    
+    for note in notes_result.data or []:
+        updates.append({
+            "date": note["created_at"],
+            "note": "Update from Admin Operations: " + note["note"],
+            "type": "info"
+        })
+        
+    if complaint["status"] == "resolved":
+        updates.append({
+            "date": datetime.now(timezone.utc).isoformat(),
+            "note": "Complaint marked as Resolved.",
+            "type": "success"
+        })
+
+    complaint["updates"] = updates
+    return complaint

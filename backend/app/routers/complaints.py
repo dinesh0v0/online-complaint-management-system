@@ -2,13 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.auth import get_current_user
 from app.models.auth import UserProfile
-from app.models.complaints import ComplaintCreateRequest, ComplaintRecord, ComplaintStatsResponse
+from app.models.complaints import ComplaintCreateRequest, ComplaintRecord, ComplaintStatsResponse, ComplaintTrackingResponse
 from app.services.complaints import (
     build_stats,
     create_complaint,
     get_complaint_by_id,
     list_citizen_complaints,
     strip_internal_notes,
+    track_public_complaint,
 )
 
 router = APIRouter(prefix="/complaints", tags=["complaints"])
@@ -43,3 +44,8 @@ async def get_my_complaint(
     if current_user.role != "admin":
         complaint = strip_internal_notes(complaint)
     return ComplaintRecord(**complaint)
+
+
+@router.get("/track/{ref_id}", response_model=ComplaintTrackingResponse)
+async def track_complaint(ref_id: str) -> ComplaintTrackingResponse:
+    return ComplaintTrackingResponse(**track_public_complaint(ref_id))

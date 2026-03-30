@@ -7,6 +7,7 @@ import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { api } from '../lib/api';
 
 export function PublicTrackingPage() {
   const [refId, setRefId] = useState('');
@@ -15,7 +16,7 @@ export function PublicTrackingPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
     if (!refId.trim()) return;
 
@@ -23,27 +24,14 @@ export function PublicTrackingPage() {
     setError('');
     setResult(null);
 
-    // Mock API call simulation
-    setTimeout(() => {
+    try {
+      const data = await api.trackComplaint(refId);
+      setResult(data);
+    } catch (err) {
+      setError(err.message || 'No complaint found with this Reference ID. Please check and try again.');
+    } finally {
       setLoading(false);
-      
-      // We'll mock a "found" response if it has > 5 chars, else "not found"
-      if (refId.length > 5) {
-        setResult({
-          id: refId.toUpperCase(),
-          status: 'under_investigation',
-          title: 'Public Nuisance Report',
-          category: 'Other',
-          submitted_at: new Date().toISOString(),
-          updates: [
-            { date: new Date().toISOString(), note: 'Complaint assigned to Officer JD.', type: 'info' },
-            { date: new Date(Date.now() - 86400000).toISOString(), note: 'Complaint registered successfully.', type: 'success' },
-          ]
-        });
-      } else {
-        setError('No complaint found with this Reference ID. Please check and try again.');
-      }
-    }, 1200);
+    }
   };
 
   return (

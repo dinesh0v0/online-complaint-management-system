@@ -43,6 +43,10 @@ class ComplaintRecord(BaseModel):
     citizen: UserSummary | None = None
     reviewer: UserSummary | None = None
     notes: list[ComplaintNoteRecord] = Field(default_factory=list)
+    mail_id: str | None = None
+    location: str | None = None
+    accused_names: str | None = None
+    witness_details: str | None = None
 
 
 class ComplaintCreateRequest(BaseModel):
@@ -52,6 +56,10 @@ class ComplaintCreateRequest(BaseModel):
     incident_date: date
     evidence_bucket: str = Field(default="complaint-evidence", max_length=120)
     evidence_path: str | None = Field(default=None, max_length=500)
+    mail_id: str | None = Field(default=None, max_length=255)
+    location: str | None = Field(default=None, max_length=500)
+    accused_names: str | None = Field(default=None, max_length=500)
+    witness_details: str | None = Field(default=None, max_length=2000)
 
     @field_validator("title", "category", "description")
     @classmethod
@@ -95,3 +103,18 @@ class ComplaintStatsResponse(BaseModel):
     counts: StatusCounts
     submissions_over_time: list[TrendPoint]
     categories: list[TrendPoint]
+
+
+class ComplaintTrackingUpdate(BaseModel):
+    date: datetime
+    note: str
+    type: str = "info"
+
+
+class ComplaintTrackingResponse(BaseModel):
+    id: str
+    status: ComplaintStatus
+    title: str
+    category: str
+    submitted_at: datetime
+    updates: list[ComplaintTrackingUpdate]

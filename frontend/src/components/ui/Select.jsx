@@ -23,11 +23,21 @@ export function Select({ className, label, id, options, error, ...props }) {
         )}
         {...props}
       >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
+        {options.map((opt) => 
+          opt.options ? (
+            <optgroup key={opt.label} label={opt.label}>
+              {opt.options.map((subOpt) => (
+                <option key={subOpt.value} value={subOpt.value}>
+                  {subOpt.label}
+                </option>
+              ))}
+            </optgroup>
+          ) : (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          )
+        )}
       </select>
       {error && <span className="text-xs text-red-500">{error}</span>}
     </div>

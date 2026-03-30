@@ -43,7 +43,7 @@ export function HomePage() {
             <Button onClick={() => navigate('/auth')} className="px-8 py-4 text-lg rounded-full shadow-panel shadow-primary/20 w-full sm:w-auto">
               Access Portal <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <Button variant="ghost" onClick={() => navigate('/auth')} className="px-8 py-4 text-lg rounded-full w-full sm:w-auto text-text-muted hover:text-text">
+            <Button variant="ghost" onClick={() => navigate('/track')} className="px-8 py-4 text-lg rounded-full w-full sm:w-auto text-text-muted hover:text-text">
               Track Status
             </Button>
           </div>

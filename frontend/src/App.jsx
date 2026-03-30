@@ -8,12 +8,14 @@ import { CitizenDashboardPage } from './pages/CitizenDashboardPage'
 import { HomePage } from './pages/HomePage'
 import { NewComplaintPage } from './pages/NewComplaintPage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { PublicTrackingPage } from './pages/PublicTrackingPage'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/track" element={<PublicTrackingPage />} />
         <Route
           path="/auth"
           element={

@@ -20,7 +20,11 @@ export function NewComplaintPage() {
     title: '',
     category: '',
     description: '',
-    incident_date: ''
+    incident_date: '',
+    mail_id: '',
+    location: '',
+    accused_names: '',
+    witness_details: ''
   });
 
   const createMutation = useMutation({
@@ -109,15 +113,91 @@ export function NewComplaintPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             <div className="space-y-1.5 w-full">
+              <label className="text-sm font-bold text-text">Mail ID</label>
+              <Input 
+                type="email"
+                placeholder="Alternative contact email (optional)"
+                value={form.mail_id}
+                onChange={(e) => setForm({...form, mail_id: e.target.value})}
+                disabled={createMutation.isPending}
+                className="h-12 border-border focus:border-primary shadow-sm"
+              />
+            </div>
+            <div className="space-y-1.5 w-full">
+              <label className="text-sm font-bold text-text">Location of Occurrence</label>
+              <Input 
+                type="text"
+                placeholder="Exact address or landmark"
+                required
+                value={form.location}
+                onChange={(e) => setForm({...form, location: e.target.value})}
+                disabled={createMutation.isPending}
+                className="h-12 border-border focus:border-primary shadow-sm"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            <div className="space-y-1.5 w-full">
                <label className="text-sm font-bold text-text">Classification</label>
                <Select 
                  options={[
                    { value: '', label: 'Select a category...' },
-                   { value: 'traffic', label: 'Traffic & Roads' },
-                   { value: 'nuisance', label: 'Public Nuisance' },
-                   { value: 'theft', label: 'Theft / Vandalism' },
-                   { value: 'infrastructure', label: 'Infrastructure Damage' },
-                   { value: 'other', label: 'Other / Misc' }
+                   { label: 'Violent & Physical Crimes', options: [
+                       { value: 'murder_attempt', label: 'Murder / Attempt to Murder' },
+                       { value: 'assault', label: 'Assault / Beaten / Hurt' },
+                       { value: 'kidnapping', label: 'Kidnapping / Abduction' },
+                       { value: 'threat', label: 'Threat to Life / Criminal Intimidation' },
+                       { value: 'blackmail', label: 'Blackmail' },
+                       { value: 'abetment_suicide', label: 'Abetment to Suicide' },
+                       { value: 'dispute_quarrel', label: 'Dispute with Neighbour / Physical Quarrel' },
+                       { value: 'domestic_violence', label: 'Domestic Violence' },
+                       { value: 'acid_attack', label: 'Acid Attack' }
+                   ]},
+                   { label: 'Crimes Against Women & Children', options: [
+                       { value: 'sexual_harassment', label: 'Sexual Harassment / Eve Teasing (Sec 354/509 IPC)' },
+                       { value: 'rape', label: 'Rape / Attempt to Rape / Gang Rape' },
+                       { value: 'dowry', label: 'Dowry Death / Demand of Dowry' },
+                       { value: 'voyeurism_stalking', label: 'Voyeurism / Stalking / Obscene Calls/SMS' },
+                       { value: 'child_abuse', label: 'Child Labour / Child Marriage / Child Abuse' }
+                   ]},
+                   { label: 'Theft & Robbery', options: [
+                       { value: 'theft', label: 'Theft (General / Household)' },
+                       { value: 'vehicle_theft', label: 'Vehicle Theft' },
+                       { value: 'robbery_dacoity', label: 'Robbery / Dacoity' },
+                       { value: 'snatching', label: 'Mobile / Chain Snatching' },
+                       { value: 'trespass', label: 'House Trespass / Land Trespass / Forceful Occupation' }
+                   ]},
+                   { label: 'Fraud & Cybercrime', options: [
+                       { value: 'fraud_forgery', label: 'Forgery / Cheating / Fraud' },
+                       { value: 'online_banking_fraud', label: 'Online Banking / ATM Fraud' },
+                       { value: 'cyberbullying', label: 'Cyberbullying / Stalking / Blackmailing' },
+                       { value: 'fake_profile', label: 'Fake Profile on Social Media / Impersonation' },
+                       { value: 'hacking', label: 'Hacking' },
+                       { value: 'chitfund_counterfeit', label: 'Chitfund Fraud / Counterfeit Currency' }
+                   ]},
+                   { label: 'Public Order & Traffic', options: [
+                       { value: 'vandalism', label: 'Property Damage / Vandalism' },
+                       { value: 'hit_and_run', label: 'Hit and Run' },
+                       { value: 'rash_driving', label: 'Rash Driving / Drink and Drive' },
+                       { value: 'illegal_parking', label: 'Illegal Parking / Road Blockage' },
+                       { value: 'noise_pollution', label: 'Noise Pollution' },
+                       { value: 'gambling', label: 'Gambling' },
+                       { value: 'vulgarity', label: 'Vulgarity at Public Place' },
+                       { value: 'communal_violence', label: 'Hurting Religious Sentiments / Communal Violence' },
+                       { value: 'scst_violations', label: 'SC/ST Act Violations' },
+                       { value: 'arms_act', label: 'Arms Act Violations' },
+                       { value: 'drugs', label: 'Drug Related (Supply/Possession)' }
+                   ]},
+                   { label: 'Police Accountability', options: [
+                       { value: 'no_action', label: 'No Action by Police / Refusal to Register FIR' },
+                       { value: 'misbehaviour', label: 'Misbehaviour by Police Official' },
+                       { value: 'delay_investigation', label: 'Delay in Enquiry and Investigation' },
+                       { value: 'torture', label: 'Torture by Police / Violation of Human Rights' }
+                   ]},
+                   { label: 'Other', options: [
+                       { value: 'other', label: 'Other' }
+                   ]}
                  ]}
                  required
                  value={form.category}
@@ -150,6 +230,29 @@ export function NewComplaintPage() {
               minLength={20}
               value={form.description}
               onChange={(e) => setForm({...form, description: e.target.value})}
+              disabled={createMutation.isPending}
+            ></textarea>
+          </div>
+
+          <div className="space-y-1.5 w-full">
+            <label className="text-sm font-bold text-text">Names of Accused</label>
+            <Input 
+              type="text"
+              placeholder="Leave blank if unknown"
+              value={form.accused_names}
+              onChange={(e) => setForm({...form, accused_names: e.target.value})}
+              disabled={createMutation.isPending}
+              className="h-12 border-border focus:border-primary shadow-sm"
+            />
+          </div>
+
+          <div className="space-y-1.5 w-full">
+            <label className="text-sm font-bold text-text">Witness Details</label>
+            <textarea
+              className="resize-none w-full rounded-lg border border-border bg-surface px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[100px] shadow-sm"
+              placeholder="Names and contact details of any witnesses"
+              value={form.witness_details}
+              onChange={(e) => setForm({...form, witness_details: e.target.value})}
               disabled={createMutation.isPending}
             ></textarea>
           </div>

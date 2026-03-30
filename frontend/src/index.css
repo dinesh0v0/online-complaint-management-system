@@ -16,13 +16,20 @@
     --color-text-muted: #5e5e5e;
     
     --color-border: #e2e8f0;
+
+    --gradient-bg: radial-gradient(circle at top right, rgba(204, 0, 0, 0.05), transparent 40%),
+                   radial-gradient(circle at bottom left, rgba(204, 0, 0, 0.03), transparent 40%);
     
     body {
       color: var(--color-text);
       background-color: var(--color-bg);
+      background-image: var(--gradient-bg);
+      background-attachment: fixed;
       font-family: 'Public Sans', sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      margin: 0;
     }
   }
 
@@ -37,6 +44,9 @@
     --color-text-muted: #a1a1aa;
     
     --color-border: #27272a;
+
+    --gradient-bg: radial-gradient(circle at top right, rgba(204, 0, 0, 0.1), transparent 50%),
+                   radial-gradient(circle at bottom left, rgba(204, 0, 0, 0.05), transparent 50%);
   }
 }
 

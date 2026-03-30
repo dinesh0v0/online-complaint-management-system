@@ -196,6 +196,17 @@ export function AuthPage() {
             </button>
           </div>
           
+          <div className="mt-6 pt-6 border-t border-border/50 text-center">
+            <button
+              type="button"
+              onClick={() => window.location.href = '/track'}
+              className="text-sm font-semibold text-text-muted hover:text-text transition-colors flex items-center justify-center w-full gap-2 p-2"
+            >
+              <Search size={16} />
+              Track a Complaint (No Login Required)
+            </button>
+          </div>
+          
         </div>
       </div>
     </div>

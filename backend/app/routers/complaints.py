@@ -33,6 +33,11 @@ async def submit_complaint(
     return ComplaintRecord(**strip_internal_notes(create_complaint(current_user, payload)))
 
 
+@router.get("/track/{ref_id}", response_model=ComplaintTrackingResponse)
+async def track_complaint(ref_id: str) -> ComplaintTrackingResponse:
+    return ComplaintTrackingResponse(**track_public_complaint(ref_id))
+
+
 @router.get("/{complaint_id}", response_model=ComplaintRecord)
 async def get_my_complaint(
     complaint_id: str,
@@ -44,8 +49,3 @@ async def get_my_complaint(
     if current_user.role != "admin":
         complaint = strip_internal_notes(complaint)
     return ComplaintRecord(**complaint)
-
-
-@router.get("/track/{ref_id}", response_model=ComplaintTrackingResponse)
-async def track_complaint(ref_id: str) -> ComplaintTrackingResponse:
-    return ComplaintTrackingResponse(**track_public_complaint(ref_id))

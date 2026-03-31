@@ -1,11 +1,12 @@
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Select } from '../components/ui/Select';
+import { Button } from '../components/ui/Button';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
-import { LoaderCircle, TriangleAlert } from 'lucide-react';
+import { LoaderCircle, TriangleAlert, Download } from 'lucide-react';
 
 export function AdminDashboardPage() {
   const { session } = useAuth();
@@ -54,13 +55,43 @@ export function AdminDashboardPage() {
 
   const activeComplaints = complaints || [];
 
+  const handleExportCSV = () => {
+    if (!complaints || complaints.length === 0) return;
+    const headers = ['Case ID', 'Title', 'Category', 'Status', 'Submitted At', 'Citizen Name', 'Mail ID'];
+    const csvContent = [
+      headers.join(','),
+      ...complaints.map(c => [
+        `"${c.id}"`,
+        `"${c.title.replace(/"/g, '""')}"`,
+        `"${c.category}"`,
+        `"${c.status}"`,
+        `"${new Date(c.submitted_at).toISOString()}"`,
+        `"${c.citizen?.full_name || ''}"`,
+        `"${c.mail_id || ''}"`
+      ].join(','))
+    ].join('\\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `complaints_export_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="flex flex-col space-y-6 md:space-y-8 max-w-[1440px] mx-auto pb-12 w-full px-2 sm:px-0">
       
       {/* Header */}
-      <div>
-        <h1 className="text-3xl md:text-4xl font-display font-bold text-text tracking-tight">Operations Board</h1>
-        <p className="text-text-muted mt-2 text-sm md:text-base">Command Center for triaging and tracking active citizen files.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-text tracking-tight">Operations Board</h1>
+          <p className="text-text-muted mt-2 text-sm md:text-base">Command Center for triaging and tracking active citizen files.</p>
+        </div>
+        <Button onClick={handleExportCSV} variant="outline" className="gap-2 shrink-0 self-start md:self-auto px-4 !h-10 border-border text-text hover:bg-surface">
+          <Download size={18} /> Export Queue
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">

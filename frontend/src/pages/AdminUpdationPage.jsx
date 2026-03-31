@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
 import { Select } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
@@ -6,14 +6,18 @@ import { Badge } from '../components/ui/Badge';
 import { Input } from '../components/ui/Input';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { api } from '../lib/api';
-import { LoaderCircle, FileText, Send, Clock, User, MapPin, Mail, Eye } from 'lucide-react';
+import { LoaderCircle, FileText, Send, Clock, User, MapPin, Mail, Eye, Search, Paperclip, Download } from 'lucide-react';
 
 export function AdminUpdationPage() {
   const { session } = useAuth();
   const queryClient = useQueryClient();
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
   const [noteText, setNoteText] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [evidenceUrl, setEvidenceUrl] = useState(null);
+  const [isEvidenceLoading, setIsEvidenceLoading] = useState(false);
 
   const { data: complaints, isLoading } = useQuery({
     queryKey: ['adminComplaints'],
@@ -37,6 +41,43 @@ export function AdminUpdationPage() {
   });
 
   const selectedComplaint = complaints?.find(c => c.id === selectedComplaintId);
+
+  const filteredComplaints = useMemo(() => {
+    if (!complaints) return [];
+    if (!searchQuery.trim()) return complaints;
+    const lowerQuery = searchQuery.toLowerCase();
+    return complaints.filter(c => 
+      c.id.toLowerCase().includes(lowerQuery) || 
+      c.title.toLowerCase().includes(lowerQuery) ||
+      (c.citizen?.full_name || '').toLowerCase().includes(lowerQuery) ||
+      c.category.toLowerCase().includes(lowerQuery)
+    );
+  }, [complaints, searchQuery]);
+
+  useEffect(() => {
+    if (selectedComplaint?.evidence_path) {
+      setIsEvidenceLoading(true);
+      const fetchEvidenceUrl = async () => {
+        try {
+          const { data, error } = await supabase.storage
+            .from('complaint-evidence')
+            .createSignedUrl(selectedComplaint.evidence_path, 3600);
+          
+          if (error) throw error;
+          setEvidenceUrl(data.signedUrl);
+        } catch (error) {
+          console.error("Error fetching evidence:", error);
+          setEvidenceUrl(null);
+        } finally {
+          setIsEvidenceLoading(false);
+        }
+      };
+      fetchEvidenceUrl();
+    } else {
+      setEvidenceUrl(null);
+      setIsEvidenceLoading(false);
+    }
+  }, [selectedComplaint?.evidence_path]);
 
   const handleAddNote = (e) => {
     e.preventDefault();
@@ -71,13 +112,22 @@ export function AdminUpdationPage() {
         {/* Left Column: Complaint List Tracker */}
         <div className="lg:col-span-5 xl:col-span-4 flex flex-col min-h-0 bg-surface border border-border rounded-2xl shadow-sm overflow-hidden h-[75vh]">
           <div className="p-4 border-b border-border bg-bg/50">
-            <h3 className="font-bold font-display text-text">Active Submissions</h3>
+            <h3 className="font-bold font-display text-text mb-3">Active Submissions</h3>
+            <div className="relative">
+               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+               <Input 
+                 placeholder="Search by ID, name, or title..." 
+                 className="pl-9 h-9 text-sm" 
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+               />
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto p-2 space-y-2">
-            {!complaints || complaints.length === 0 ? (
-              <p className="text-center text-text-muted py-8 text-sm">No active complaints found.</p>
+            {!filteredComplaints || filteredComplaints.length === 0 ? (
+              <p className="text-center text-text-muted py-8 text-sm">No active complaints match your filter.</p>
             ) : (
-              complaints.map(c => (
+              filteredComplaints.map(c => (
                 <div 
                   key={c.id} 
                   onClick={() => setSelectedComplaintId(c.id)}
@@ -160,6 +210,44 @@ export function AdminUpdationPage() {
                    <h3 className="text-sm uppercase tracking-wider font-bold text-text-muted mb-3 border-b border-border/50 pb-2">Description of Event</h3>
                    <p className="text-text leading-relaxed whitespace-pre-wrap text-sm">{selectedComplaint.description}</p>
                 </div>
+                
+                {selectedComplaint.evidence_path && (
+                  <div>
+                    <h3 className="text-sm uppercase tracking-wider font-bold text-text-muted mb-3 border-b border-border/50 pb-2 flex items-center gap-2">
+                      <Paperclip size={16}/> Uploaded Evidence
+                    </h3>
+                    {isEvidenceLoading ? (
+                      <div className="h-40 bg-surface/50 border border-border rounded-xl flex items-center justify-center text-text-muted">
+                         <LoaderCircle className="animate-spin w-8 h-8" />
+                      </div>
+                    ) : evidenceUrl ? (
+                      <div className="bg-surface p-4 border border-border rounded-xl">
+                        {selectedComplaint.evidence_path.toLowerCase().endsWith('.pdf') ? (
+                           <div className="flex flex-col items-center justify-center p-6 text-text-muted bg-bg/50 rounded-lg border border-border">
+                             <FileText size={48} className="mb-3 text-red-500"/>
+                             <p className="text-sm font-bold mb-3">{selectedComplaint.evidence_path.split('/').pop()}</p>
+                             <a href={evidenceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-600 transition-colors">
+                               <Download size={16}/> Download PDF Evidence
+                             </a>
+                           </div>
+                        ) : (
+                           <div className="rounded-lg overflow-hidden border border-border max-h-[500px] flex items-center justify-center bg-black/5 dark:bg-white/5 relative">
+                             <a href={evidenceUrl} target="_blank" rel="noopener noreferrer" className="block w-full h-full relative group">
+                                <img src={evidenceUrl} alt="Attached Evidence" className="w-full h-auto max-h-[500px] object-contain" />
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white backdrop-blur-sm">
+                                  <span className="flex items-center gap-2 font-bold"><Eye size={20}/> View Full Resolution</span>
+                                </div>
+                             </a>
+                           </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 rounded-xl border border-red-100 dark:border-red-900/30 text-sm">
+                        Failed to fetch secure evidence URL. It may have been deleted or expired.
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-surface p-4 rounded-xl border border-border">

@@ -8,6 +8,7 @@ from app.core.config import get_settings
 from app.core.supabase import get_supabase_admin
 from app.models.auth import UserProfile
 from app.models.complaints import ComplaintCreateRequest, ComplaintStatus, ComplaintUpdateRequest
+from app.services.email import send_complaint_update_email
 
 
 def get_profile_by_id(user_id: str) -> dict[str, Any] | None:
@@ -158,7 +159,20 @@ def create_complaint(current_user: UserProfile, payload: ComplaintCreateRequest)
     records = result.data or []
     if not records:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Complaint could not be created.")
-    return get_complaint_by_id(records[0]["id"])
+    
+    complaint = get_complaint_by_id(records[0]["id"])
+    target_email = payload.mail_id or current_user.email
+    friendly_id = complaint["id"].split('-')[-1]
+    
+    send_complaint_update_email(
+        target_email,
+        complaint["title"],
+        friendly_id,
+        "Your complaint has been successfully registered on the network.\\nOur administrators will review it shortly. You will receive further updates here.",
+        is_new=True
+    )
+    
+    return complaint
 
 
 def update_complaint_status(
@@ -175,7 +189,19 @@ def update_complaint_status(
     }
 
     get_supabase_admin().table("complaints").update(update_payload).eq("id", complaint_id).execute()
-    return get_complaint_by_id(complaint_id)
+    updated = get_complaint_by_id(complaint_id)
+    
+    friendly_id = complaint_id.split('-')[-1]
+    target_email = updated.get("mail_id") or (updated.get("citizen") or {}).get("email")
+    if target_email:
+        send_complaint_update_email(
+            target_email,
+            updated["title"],
+            friendly_id,
+            f"The status of your complaint has been updated to: {payload.status.value.replace('_', ' ').capitalize()}"
+        )
+        
+    return updated
 
 
 def add_internal_note(complaint_id: str, author_id: str, note: str) -> dict[str, Any]:
@@ -188,7 +214,19 @@ def add_internal_note(complaint_id: str, author_id: str, note: str) -> dict[str,
             "note": note,
         }
     ).execute()
-    return get_complaint_by_id(complaint_id)
+    updated = get_complaint_by_id(complaint_id)
+    
+    friendly_id = complaint_id.split('-')[-1]
+    target_email = updated.get("mail_id") or (updated.get("citizen") or {}).get("email")
+    if target_email:
+        send_complaint_update_email(
+            target_email,
+            updated["title"],
+            friendly_id,
+            f"An administrator provided an update:\\n\\n\"{note}\""
+        )
+        
+    return updated
 
 
 def build_stats(complaints: list[dict[str, Any]]) -> dict[str, Any]:

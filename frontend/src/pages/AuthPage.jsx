@@ -33,18 +33,16 @@ export function AuthPage() {
 
     try {
       if (isLogin) {
-        const { error: signInError } = await signIn({ email: form.email, password: form.password });
-        if (signInError) throw signInError;
+        await signIn({ email: form.email, password: form.password });
       } else {
-        const { error: authError } = await signUp({
+        await signUp({
+          full_name: form.fullName,
           email: form.email,
           password: form.password,
-          options: { data: { full_name: form.fullName } },
         });
-        if (authError) throw authError;
       }
     } catch (err) {
-      setError(err.message || 'An error occurred during authentication.');
+      setError(err.message === '[object Object]' ? 'Invalid details provided.' : err.message || 'An error occurred during authentication.');
     } finally {
       setLoading(false);
     }

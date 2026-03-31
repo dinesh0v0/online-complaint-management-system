@@ -32,13 +32,16 @@ async function request(path, { method = 'GET', body, token } = {}) {
   const responseText = contentType.includes('application/json') ? '' : await response.text().catch(() => '')
 
   if (!response.ok) {
-    throw new Error(
-      payload.detail ||
-        payload.message ||
-        payload.error_description ||
-        responseText ||
-        `Request failed with status ${response.status}.`,
-    )
+    let errorMessage = `Request failed with status ${response.status}.`
+    if (payload && Array.isArray(payload.detail)) {
+      errorMessage = payload.detail.map(e => `${e.loc[e.loc.length - 1]}: ${e.msg}`).join(', ')
+    } else if (payload) {
+      errorMessage = payload.detail || payload.message || payload.error_description || responseText || errorMessage
+    } else {
+      errorMessage = responseText || errorMessage
+    }
+
+    throw new Error(errorMessage)
   }
 
   return payload
